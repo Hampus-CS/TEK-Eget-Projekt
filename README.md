@@ -98,8 +98,8 @@ This project monitors system resource usage (CPU, RAM, GPU) and fetches the late
    Create a `.env` file in the root of the project with the following content:
 
    ```env
-   ELECTRICITY_MAPS_EMAIL=YOUR-EMAIL@SOMETHING
-   ELECTRICITY_MAPS_API_KEY=YOUR-API-KEY
+   ELECTRICITY_MAPS_EMAIL=YOUR_ELECTRICITY_MAPS_EMAIL
+   ELECTRICITY_MAPS_API_KEY=YOUR_ELECTRICITY_MAPS_API_KEY
    ```
 
    This file contains your credentials for the Electricity Map API. **Make sure this file is listed in your `.gitignore` to prevent it from being committed.**
