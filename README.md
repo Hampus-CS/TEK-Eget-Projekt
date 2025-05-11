@@ -100,9 +100,17 @@ This project monitors system resource usage (CPU, RAM, GPU) and fetches the late
 
 ## Configuration
 
-- **CO₂ Zone**: Change `ZONE` in `.env` to any Electricity Map zone (default `SE-SE3`).  
-- **API Credentials**: Provide your `ELECTRICITY_MAPS_EMAIL` and `ELECTRICITY_MAPS_API_KEY`.  
-- **TDP Settings**: Adjust CPU/GPU TDP in the web UI settings form.
+Configure the behavior of the application by setting environment variables in your `.env` file:
+
+- **ELECTRICITY_MAPS_EMAIL**: Your Electricity Map account email (used for authentication).  
+- **ELECTRICITY_MAPS_API_KEY**: Your Electricity Map API token (used for authentication).  
+- **ZONE**: Electricity Map zone to fetch CO₂ intensity for (default `SE-SE3` for Södra Mellansverige).  
+- **HOST**: Host address for the Flask server (default `127.0.0.1`).  
+- **PORT**: Port number for the Flask server (default `5000`).  
+- **MONITOR_INTERVAL**: Interval in seconds between each system measurement (default `60`).  
+- **DB_PATH**: Path to the local SQLite database file (default `energy_data.db`).
+
+(do **not** commit this file to version control)
 
 ## Troubleshooting
 
