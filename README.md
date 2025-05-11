@@ -67,15 +67,20 @@ This project monitors system resource usage (CPU, RAM, GPU) and fetches the late
 
 ## Usage
 
-1. **Create `.env`** in project root:  
+1. **Create `.env`** in project root. Example:
+
    ```ini
-   ELECTRICITY_MAPS_API_KEY=YOUR_API_KEY
+   ELECTRICITY_MAPS_EMAIL=hampus.carlstromsvanberg@elev.ga.lbs.se
+   ELECTRICITY_MAPS_API_KEY=RGQHkCL45UnqR6ctU8rW
    ZONE=SE-SE3
    HOST=127.0.0.1
    PORT=5000
    MONITOR_INTERVAL=60
    DB_PATH=energy_data.db
    ```
+
+   - `ELECTRICITY_MAPS_EMAIL` and `ELECTRICITY_MAPS_API_KEY` are your credentials for the Electricity Map API.  
+   - **Do not** commit this file to version control; it is included in `.gitignore`.
 
 2. **Run all components** (Windows):  
    - Double-click `run.bat`  
@@ -95,30 +100,13 @@ This project monitors system resource usage (CPU, RAM, GPU) and fetches the late
 
 ## Configuration
 
-Configure the behavior of the application by setting environment variables in your `.env` file:
-
-- **ELECTRICITY_MAPS_EMAIL**: Your Electricity Map account email (used for authentication).  
-- **ELECTRICITY_MAPS_API_KEY**: Your Electricity Map API token (used for authentication).  
-- **ZONE**: Electricity Map zone to fetch CO₂ intensity for (default `SE-SE3` for Södra Mellansverige).  
-- **HOST**: Host address for the Flask server (default `127.0.0.1`).  
-- **PORT**: Port number for the Flask server (default `5000`).  
-- **MONITOR_INTERVAL**: Interval in seconds between each system measurement (default `60`).  
-- **DB_PATH**: Path to the local SQLite database file (default `energy_data.db`).
-
-Example `.env` (do **not** commit this file to version control):
-
-```ini
-ELECTRICITY_MAPS_EMAIL=your_email@example.com
-ELECTRICITY_MAPS_API_KEY=your_api_key_here
-ZONE=SE-SE3
-HOST=127.0.0.1
-PORT=5000
-MONITOR_INTERVAL=60
-DB_PATH=energy_data.db
+- **CO₂ Zone**: Change `ZONE` in `.env` to any Electricity Map zone (default `SE-SE3`).  
+- **API Credentials**: Provide your `ELECTRICITY_MAPS_EMAIL` and `ELECTRICITY_MAPS_API_KEY`.  
+- **TDP Settings**: Adjust CPU/GPU TDP in the web UI settings form.
 
 ## Troubleshooting
 
-- **401 Unauthorized**: Check your API key in `.env`.  
+- **401 Unauthorized**: Check your API credentials in `.env`.  
 - **Empty UI**: Run `system_monitor.py` at least once, then reload page.  
 - **Dependency Errors**:  
   ```bash
