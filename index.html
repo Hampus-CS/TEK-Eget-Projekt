@@ -2,46 +2,263 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>Senaste Systemdata</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Monitor &amp; CO₂-estimering</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-      background: #f4f4f4;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 100vh;
     }
-    .container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 600px;
-      margin: auto;
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     h1 {
+      font-size: 1.2rem;
+      color: #222;
+    }
+    .refresh-btn {
+      padding: 4px 8px;
+      font-size: 0.9rem;
+      background: #0078d4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .refresh-btn:hover { background: #005a9e; }
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      padding: 12px;
+    }
+    /* Settings */
+    #settings-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    #settings-form label {
+      font-size: 0.85rem;
+      color: #555;
+      display: flex;
+      flex-direction: column;
+    }
+    #settings-form input {
+      margin-top: 4px;
+      padding: 4px 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 80px;
+      font-size: 0.9rem;
+    }
+    #settings-form button {
+      padding: 6px 12px;
+      background: #0078d4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    #settings-form button:hover { background: #005a9e; }
+
+    /* Data grid */
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .data-item {
+      background: #fafafa;
+      border-radius: 4px;
+      padding: 8px;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .data-item strong {
+      display: block;
+      font-size: 0.75rem;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .data-item span {
+      font-size: 1rem;
+      color: #222;
+    }
+    .disclaimer {
+      font-size: 0.75rem;
+      color: #777;
+      margin-top: 6px;
       text-align: center;
     }
-    .data {
-      margin: 20px 0;
+
+    /* Chart */
+    #chart-container {
+      background: #fff;
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      position: relative;
+      height: 200px;
     }
-    .data p {
-      font-size: 1.1em;
-    }
+    #historyChart { width: 100%; height: 100%; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Senaste Systemdata</h1>
-    {% if data %}
-      <div class="data">
-        <p><strong>Tid:</strong> {{ data['timestamp'] }}</p>
-        <p><strong>CPU-användning:</strong> {{ data['cpu_usage'] }}%</p>
-        <p><strong>RAM-användning:</strong> {{ data['ram_usage'] }}%</p>
-        <p><strong>GPU-användning:</strong> {{ data['gpu_usage'] }}%</p>
-        <p><strong>CO₂-intensitet:</strong> {{ data['co2_intensity'] }}</p>
-      </div>
-    {% else %}
-      <p>Ingen data sparad än.</p>
-    {% endif %}
+
+  <header>
+    <h1>System Monitor &amp; CO₂-estimering</h1>
+    <button class="refresh-btn" onclick="location.reload()">Uppdatera</button>
+  </header>
+
+  <div class="card">
+    <h1>Inställningar</h1>
+    <form id="settings-form">
+      <label>
+        CPU TDP (W)
+        <input type="number" name="cpu_tdp" value="{{ cpu_tdp|int }}" min="0" required>
+      </label>
+      <label>
+        GPU TDP (W)
+        <input type="number" name="gpu_tdp" value="{{ gpu_tdp|int }}" min="0" required>
+      </label>
+      <button type="submit">Spara</button>
+    </form>
   </div>
+
+  <div class="card">
+    <h1>Systemdata</h1>
+    <div class="data-grid">
+      <div class="data-item">
+        <strong>Tid (CEST)</strong>
+        <span id="timestamp">{{ data.timestamp or '–' }}</span>
+      </div>
+      <div class="data-item">
+        <strong>CPU</strong>
+        <span>{{ data.cpu_usage or 0 }} %</span>
+      </div>
+      <div class="data-item">
+        <strong>RAM</strong>
+        <span>{{ data.ram_usage or 0 }} %</span>
+      </div>
+      <div class="data-item">
+        <strong>GPU</strong>
+        <span>{{ data.gpu_usage or 0 }} %</span>
+      </div>
+      <div class="data-item">
+        <strong>CO₂-intensitet</strong>
+        <span>{{ data.co2_intensity or 0 | round(1) }} g/kWh</span>
+      </div>
+      <div class="data-item">
+        <strong>CO₂-utsläpp</strong>
+        <span>
+          {% if data.co2_emission is not none and data.co2_emission < 1 %}
+            {{ (data.co2_emission * 1000) | round(1) }} mg
+          {% else %}
+            {{ data.co2_emission | default(0) | round(2) }} g
+          {% endif %}
+        </span>
+      </div>
+    </div>
+    <p class="disclaimer">Beräkningarna är uppskattningar.</p>
+  </div>
+
+  <div id="chart-container" class="card">
+    <canvas id="historyChart"></canvas>
+  </div>
+
+  <script>
+    // Spara inställningar
+    document.getElementById('settings-form').onsubmit = async e => {
+      e.preventDefault();
+      const f = e.target;
+      const payload = {
+        cpu_tdp: parseFloat(f.cpu_tdp.value),
+        gpu_tdp: parseFloat(f.gpu_tdp.value)
+      };
+      const r = await fetch('/api/settings', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if (r.ok) {
+        alert('Inställningar sparade!');
+        location.reload();
+      } else {
+        const err = await r.json();
+        alert('Fel: ' + (err.error || r.statusText));
+      }
+    };
+
+    // Hämta och visa historik
+    async function loadHistory() {
+      const resp = await fetch('/api/history');
+      const hist = await resp.json();
+      if (!hist.length) return;
+
+      // Konvertera och formatera labels i lokal tid
+      const labels = hist.map(i => {
+        const dt = new Date(i.timestamp + 'Z');
+        return dt.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+      });
+      const cpuData = hist.map(i => i.cpu_usage);
+      const ramData = hist.map(i => i.ram_usage);
+      const gpuData = hist.map(i => i.gpu_usage);
+      const co2Int  = hist.map(i => i.co2_intensity);
+      const co2Data = hist.map(i => i.co2_emission);
+
+      new Chart(document.getElementById('historyChart').getContext('2d'), {
+        type: 'line',
+        data: { labels, datasets: [
+            { label: 'CPU %',          data: cpuData, borderWidth: 1, tension: 0.2 },
+            { label: 'RAM %',          data: ramData, borderWidth: 1, tension: 0.2 },
+            { label: 'GPU %',          data: gpuData, borderWidth: 1, tension: 0.2 },
+            { label: 'CO₂-intensitet', data: co2Int,  borderWidth: 1, tension: 0.2 },
+            { label: 'CO₂-utsläpp',    data: co2Data, borderWidth: 1, tension: 0.2 }
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { grid: { color: '#eee' } },
+            y: { beginAtZero: true, grid: { color: '#eee' } }
+          },
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth:10, font:{size:10} } }
+          }
+        }
+      });
+    }
+
+    // Initiera graf, konvertera timestamp & lägg på polling
+    window.addEventListener('DOMContentLoaded', () => {
+      loadHistory();
+
+      // Formatera huvud-tid
+      const tsEl = document.getElementById('timestamp');
+      if (tsEl && tsEl.textContent && tsEl.textContent !== '–') {
+        const dt = new Date(tsEl.textContent + 'Z');
+        tsEl.textContent = dt.toLocaleString('sv-SE', {
+          timeZone: 'Europe/Stockholm',
+          hour:   '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      }
+
+      // Automatisk uppdatering var 60 s
+      setInterval(() => location.reload(), 60000);
+    });
+  </script>
 </body>
 </html>

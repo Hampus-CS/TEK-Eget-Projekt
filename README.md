@@ -1,154 +1,146 @@
 # TEK-Eget-Projekt
 
-This project monitors system resource usage (CPU, RAM, GPU) and fetches the latest CO₂ intensity data from the Electricity Map API. It is built using Python and uses Basic Authentication with credentials stored in a `.env` file.
+This project monitors system resource usage (CPU, RAM, GPU) and fetches the latest CO₂ intensity data from the Electricity Map API for “Södra Mellansverige” (SE-SE3). It is built in Python, stores data locally in SQLite, and serves a lightweight web UI via Flask.
 
 ## Table of Contents
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-  - [Running Locally (Without a Virtual Environment)](#running-locally-without-a-virtual-environment)
-  - [Using a Virtual Environment](#using-a-virtual-environment)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-- [Project Structure](#project-structure)
-- [License](#license)
+- [Features](#features)  
+- [Requirements](#requirements)  
+- [Installation](#installation)  
+  - [Without Virtual Environment](#without-virtual-environment)  
+  - [With Virtual Environment](#with-virtual-environment)  
+- [Usage](#usage)  
+- [Configuration](#configuration)  
+- [Troubleshooting](#troubleshooting)  
+- [Project Structure](#project-structure)  
+- [License](#license)  
 
 ## Features
 
-- **System Monitoring:** Retrieves CPU, RAM, and GPU usage data.
-- **CO₂ Intensity API Call:** Uses the Electricity Map API to fetch current carbon intensity for a specified zone.
-- **Secure Credentials:** Stores API credentials in an environment file to avoid hardcoding sensitive data.
+- **System Monitoring**: Retrieves CPU, RAM, and GPU usage every minute.  
+- **CO₂ Intensity**: Fetches carbon intensity (g/kWh) for SE-SE3 max once per hour.  
+- **Local Storage**: Saves all data in a local SQLite database (`energy_data.db`).  
+- **Web UI**: Displays latest values and 60-minute history graph, with auto-refresh.  
+- **Lightweight**: No external database service required; pure file-based.
 
 ## Requirements
 
-- **Python 3.11 or later:** Ensure you have a compatible version of Python installed.
-- **pip:** Python package installer.
+- **Python 3.8+**  
+- **pip** (Python package installer)  
 
 ## Installation
 
-### Running Locally (Without a Virtual Environment)
+### Without Virtual Environment
 
-1. **Clone the repository:**
-
+1. **Clone repository**  
    ```bash
    git clone https://github.com/yourusername/TEK-Eget-Projekt.git
    cd TEK-Eget-Projekt
    ```
 
-2. **Install required packages globally:**
-
-   If you have a `requirements.txt` file, run:
-
+2. **Install dependencies**  
    ```bash
    pip install -r requirements.txt
    ```
 
-   If not, install the dependencies manually:
+### With Virtual Environment
 
-   ```bash
-   pip install psutil GPUtil requests python-dotenv
-   ```
-
-### Using a Virtual Environment
-
-1. **Clone the repository:**
-
+1. **Clone repository**  
    ```bash
    git clone https://github.com/yourusername/TEK-Eget-Projekt.git
    cd TEK-Eget-Projekt
    ```
 
-2. **Create a virtual environment:**
-
+2. **Create and activate venv**  
    ```bash
    python -m venv venv
+   # Windows
+   venv\Scripts\activate
+   # macOS/Linux
+   source venv/bin/activate
    ```
 
-3. **Activate the virtual environment:**
-
-   - On Windows:
-     ```bash
-     venvScriptsactivate
-     ```
-   - On macOS/Linux:
-     ```bash
-     source venv/bin/activate
-     ```
-
-4. **Install required packages:**
-
-   If you have a `requirements.txt` file, run:
-
+3. **Install dependencies**  
    ```bash
    pip install -r requirements.txt
-   ```
-
-   If not, install the dependencies manually:
-
-   ```bash
-   pip install psutil GPUtil requests python-dotenv
    ```
 
 ## Usage
 
-1. **Configure your environment:**
-
-   Create a `.env` file in the root of the project with the following content:
-
-   ```env
-   ELECTRICITY_MAPS_EMAIL=YOUR_ELECTRICITY_MAPS_EMAIL
-   ELECTRICITY_MAPS_API_KEY=YOUR_ELECTRICITY_MAPS_API_KEY
+1. **Create `.env`** in project root:  
+   ```ini
+   ELECTRICITY_MAPS_API_KEY=YOUR_API_KEY
+   ZONE=SE-SE3
+   HOST=127.0.0.1
+   PORT=5000
+   MONITOR_INTERVAL=60
+   DB_PATH=energy_data.db
    ```
 
-   This file contains your credentials for the Electricity Map API. **Make sure this file is listed in your `.gitignore` to prevent it from being committed.**
+2. **Run all components** (Windows):  
+   - Double-click `run.bat`  
+     - activates venv  
+     - starts Flask API/UI (`api_ui.py`)  
+     - starts monitor (`system_monitor.py`)  
+     - opens browser at `http://127.0.0.1:5000`
 
-2. **Run the project:**
-
+   **Or manually**:  
    ```bash
+   python api_ui.py
    python system_monitor.py
    ```
 
-   The script will display:
-   - CPU usage
-   - RAM usage
-   - GPU usage
-   - CO₂ intensity for the configured zone (default is set to Sweden, zone "SE")
+3. **View in browser**  
+   Open `http://127.0.0.1:5000` to see live data.
 
 ## Configuration
 
-- **Zone Configuration:**  
-  The `get_co2_intensity()` function accepts a `zone` parameter. To change the zone (for example, to use a different country code), update the function call in the main block or modify the default value in the function definition.
+Configure the behavior of the application by setting environment variables in your `.env` file:
 
-- **Basic Authentication:**  
-  The project uses HTTP Basic Authentication. The credentials (email and API key) are loaded from the `.env` file using `python-dotenv`.
+- **ELECTRICITY_MAPS_EMAIL**: Your Electricity Map account email (used for authentication).  
+- **ELECTRICITY_MAPS_API_KEY**: Your Electricity Map API token (used for authentication).  
+- **ZONE**: Electricity Map zone to fetch CO₂ intensity for (default `SE-SE3` for Södra Mellansverige).  
+- **HOST**: Host address for the Flask server (default `127.0.0.1`).  
+- **PORT**: Port number for the Flask server (default `5000`).  
+- **MONITOR_INTERVAL**: Interval in seconds between each system measurement (default `60`).  
+- **DB_PATH**: Path to the local SQLite database file (default `energy_data.db`).
+
+Example `.env` (do **not** commit this file to version control):
+
+```ini
+ELECTRICITY_MAPS_EMAIL=your_email@example.com
+ELECTRICITY_MAPS_API_KEY=your_api_key_here
+ZONE=SE-SE3
+HOST=127.0.0.1
+PORT=5000
+MONITOR_INTERVAL=60
+DB_PATH=energy_data.db
 
 ## Troubleshooting
 
-- **API Errors:**  
-  If you encounter a `401 Unauthorized` error, double-check your API credentials in the `.env` file and ensure your plan supports external API calls.
-
-- **Dependency Issues:**  
-  Ensure all dependencies are installed. You can reinstall them using:
+- **401 Unauthorized**: Check your API key in `.env`.  
+- **Empty UI**: Run `system_monitor.py` at least once, then reload page.  
+- **Dependency Errors**:  
   ```bash
   pip install -r requirements.txt
   ```
-
-- **DNS Resolution Issues:**  
-  If you experience errors related to DNS or name resolution (e.g., `getaddrinfo failed`), check your internet connection and DNS settings. You may need to switch to a public DNS server such as Google's (8.8.8.8).
+- **Port Conflicts**: Modify `PORT` in `.env` if 5000 is in use.
 
 ## Project Structure
 
 ```
 TEK-Eget-Projekt/
-├── system_monitor.py    # Main script for system monitoring and API calls
-├── .env                 # Environment file for storing sensitive credentials (not committed)
-├── .gitignore           # Git ignore file
+├── api_ui.py            # Flask app + API endpoints + web UI
+├── system_monitor.py    # Collects metrics & CO₂ data, writes to SQLite
+├── index.html           # Jinja2 template for UI (in project root)
+├── run.bat              # Windows batch to start everything
+├── requirements.txt     # Python dependencies
+├── .env                 # Environment variables (not committed)
+├── .gitignore           # Excludes venv, .env, .db, etc.
 ├── README.md            # This file
-└── requirements.txt     # (Optional) List of dependencies
+└── energy_data.db       # Local SQLite (auto-created)
 ```
 
 ## License
 
-This project is licensed under the NULL License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
