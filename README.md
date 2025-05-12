@@ -13,7 +13,6 @@ This project monitors system resource usage (CPU, RAM, GPU) and calculates the a
 - [Configuration](#configuration)  
 - [Troubleshooting](#troubleshooting)  
 - [Project Structure](#project-structure)  
-- [License](#license)  
 
 ## Features
 
