@@ -136,7 +136,3 @@ TEK-Eget-Projekt/
 ├── README.md            # This file
 └── energy_data.db       # Local SQLite (auto-created)
 ```
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
