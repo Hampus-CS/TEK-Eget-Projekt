@@ -1,6 +1,6 @@
 # TEK-Eget-Projekt
 
-This project monitors system resource usage (CPU, RAM, GPU) and fetches the latest CO₂ intensity data from the Electricity Map API for “Södra Mellansverige” (SE-SE3). It is built in Python, stores data locally in SQLite, and serves a lightweight web UI via Flask.
+This project monitors system resource usage (CPU, RAM, GPU) and calculates the approximate power draw while also fetching the latest CO₂ intensity data from the Electricity Map API for “Södra Mellansverige” (SE-SE3). It is built in Python, stores data locally in SQLite, and serves a lightweight web UI via Flask.
 
 ## Table of Contents
 
